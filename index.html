@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>职业名称 Pekerjaan - 华文认读互动学习网站</title>
+  <style>
+    :root {
+      --bg-sky: #e0f7fa;
+      --primary-teal: #4ecdc4;
+      --primary-coral: #ff6b6b;
+      --accent-yellow: #ffe66d;
+      --accent-purple: #9b59b6;
+      --accent-blue: #4d96ff;
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-muted: #7f8c8d;
+      --correct-green: #2ecc71;
+      --wrong-red: #e74c3c;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      /* 全局首选标准楷体 */
+      --font-kaiti: "Kaiti SC", "STKaiti", "楷体", "KaiTi", "SimKai", "Comic Sans MS", serif;
+      --font-family: var(--font-kaiti);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-sky);
+      background-image: radial-gradient(#b2ebf2 15%, transparent 16%), radial-gradient(#b2ebf2 15%, transparent 16%);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px;
+      overflow-x: hidden;
+    }
+
+    /* 主框架容器 */
+    #app-container {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      border: 4px solid #ffffff;
+      box-shadow: 0 15px 35px var(--shadow-color);
+      padding: 20px;
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 顶部导航与学生信息栏 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .student-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0f9ff;
+      padding: 6px 16px;
+      border-radius: 30px;
+      border: 2px solid var(--accent-blue);
+      font-weight: bold;
+      color: #0284c7;
+      font-size: 1.1rem;
+      font-family: var(--font-kaiti);
+    }
+
+    .btn-small {
+      background: var(--accent-yellow);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #d97706;
+      box-shadow: 0 3px 0 #f59e0b;
+      transition: all 0.1s ease;
+      font-size: 0.9rem;
+      font-family: var(--font-kaiti);
+    }
+
+    .btn-small:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    .btn-nav-home {
+      background: var(--primary-coral);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #d93838;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
+      font-family: var(--font-kaiti);
+    }
+
+    .btn-nav-home:active {
+      transform: translateY(3px);
+      box-shadow: none;
+    }
+
+    /* 视图切换机制 */
+    .view-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      flex-grow: 1;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .view-screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 全局提示消息条 */
+    #toast-msg {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: bold;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 9999;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center;
+      max-width: 90%;
+      font-family: var(--font-kaiti);
+    }
+
+    #toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast-msg.warning { background: #f39c12; }
+    #toast-msg.success { background: #2ecc71; }
+    #toast-msg.error { background: #e74c3c; }
+
+    /* START MENU 开始菜单样式 */
+    .menu-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .app-title-zh {
+      font-size: 3.2rem;
+      font-weight: bold;
+      font-family: var(--font-kaiti);
+      color: var(--primary-coral);
+      text-shadow: 3px 3px 0px #ffe66d, 5px 5px 0px rgba(0,0,0,0.1);
+      letter-spacing: 3px;
+    }
+
+    .app-title-ms {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      margin-top: -5px;
+    }
+
+    .app-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      background: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      font-family: var(--font-kaiti);
+    }
+
+    .name-input-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 24px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border: 3px dashed var(--primary-teal);
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .name-input-label {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      font-family: var(--font-kaiti);
+    }
+
+    .name-input-box {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.4rem;
+      border: 3px solid #cbd5e1;
+      border-radius: 16px;
+      text-align: center;
+      font-weight: bold;
+      outline: none;
+      transition: all 0.2s;
+      color: var(--accent-purple);
+      font-family: var(--font-kaiti);
+    }
+
+    .name-input-box:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 4px rgba(77, 150, 255, 0.2);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .menu-btn {
+      background: white;
+      border: none;
+      padding: 20px 15px;
+      border-radius: 24px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-btn:hover {
+      transform: translateY(-4px);
+    }
+
+    .menu-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.1) !important;
+    }
+
+    .menu-btn-1 { background: #e0f2fe; border: 3px solid #38bdf8; box-shadow: 0 8px 0 #0284c7; }
+    .menu-btn-2 { background: #dcfce7; border: 3px solid #4ade80; box-shadow: 0 8px 0 #16a34a; }
+    .menu-btn-3 { background: #fef3c7; border: 3px solid #facc15; box-shadow: 0 8px 0 #ca8a04; }
+    .menu-btn-4 { background: #f3e8ff; border: 3px solid #c084fc; box-shadow: 0 8px 0 #9333ea; }
+
+    .menu-btn-icon { font-size: 2.5rem; }
+
+    .menu-btn-title-zh {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: var(--font-kaiti);
+    }
+
+    .menu-btn-title-ms {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* 模块通用标题 */
+    .module-title-container {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .module-title-zh {
+      font-size: 2.3rem;
+      font-weight: bold;
+      color: var(--accent-blue);
+      font-family: var(--font-kaiti);
+    }
+
+    .module-title-ms {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* 模块一：认读词语卡片 */
+    .m1-card {
+      background: white;
+      border-radius: 28px;
+      padding: 20px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      border: 4px solid #f1f5f9;
+      position: relative;
+    }
+
+    .m1-image-box {
+      width: 220px;
+      height: 220px;
+      background: #f8fafc;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px dashed #cbd5e1;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .vocab-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .word-pinyin {
+      font-size: 1.4rem;
+      color: var(--accent-blue);
+      font-weight: bold;
+      letter-spacing: 2px;
+      font-family: sans-serif;
+    }
+
+    .word-zh {
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: var(--text-main);
+      letter-spacing: 4px;
+      margin-top: -8px;
+      font-family: var(--font-kaiti);
+    }
+
+    .word-ms {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: bold;
+      background: #f1f5f9;
+      padding: 4px 14px;
+      border-radius: 12px;
+    }
+
+    .audio-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 5px;
+    }
+
+    .btn-audio {
+      background: var(--accent-yellow);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #b45309;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #d97706;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-kaiti);
+    }
+
+    .btn-audio:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #d97706;
+    }
+
+    .btn-audio-slow {
+      background: #e0e7ff;
+      color: #3730a3;
+      box-shadow: 0 4px 0 #4338ca;
+    }
+
+    .m1-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 15px;
+      gap: 10px;
+    }
+
+    .btn-action {
+      background: var(--primary-teal);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 18px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #0d9488;
+      flex: 1;
+      text-align: center;
+      font-family: var(--font-kaiti);
+    }
+
+    .btn-action:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0d9488;
+    }
+
+    .btn-action:disabled {
+      background: #cbd5e1;
+      box-shadow: 0 5px 0 #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .m1-finish-btn {
+      background: #2ecc71;
+      box-shadow: 0 5px 0 #27ae60;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 12px;
+      padding: 14px;
+      font-size: 1.2rem;
+    }
+
+    /* 模块二：看图认字 (Quiz) */
+    .quiz-progress {
+      font-weight: bold;
+      color: var(--accent-purple);
+      background: #f3e8ff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      text-align: center;
+      font-family: var(--font-kaiti);
+    }
+
+    .quiz-card {
+      background: white;
+      border-radius: 28px;
+      padding: 20px;
+      width: 100%;
+      max-width: 550px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .quiz-img-box {
+      width: 200px;
+      height: 200px;
+      background: #f8fafc;
+      border-radius: 20px;
+      border: 3px solid #e2e8f0;
+      padding: 8px;
+      overflow: hidden;
+    }
+
+    .quiz-options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .quiz-option-btn {
+      background: #f8fafc;
+      border: 3px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .quiz-option-btn:hover {
+      border-color: var(--accent-blue);
+      background: #f0f9ff;
+    }
+
+    .quiz-option-btn.correct {
+      border-color: var(--correct-green) !important;
+      background: #dcfce7 !important;
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .quiz-option-btn.wrong {
+      border-color: var(--wrong-red) !important;
+      background: #fee2e2 !important;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.95); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .opt-pinyin {
+      font-size: 1rem;
+      color: var(--accent-blue);
+      font-weight: bold;
+      font-family: sans-serif;
+    }
+
+    .opt-zh {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--text-main);
+      margin: 2px 0;
+      font-family: var(--font-kaiti);
+    }
+
+    .opt-speaker {
+      background: var(--accent-yellow);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 4px;
+      box-shadow: 0 2px 0 #d97706;
+    }
+
+    .feedback-banner {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: bold;
+      border-radius: 12px;
+      padding: 6px 16px;
+      text-align: center;
+      width: 100%;
+      font-family: var(--font-kaiti);
+    }
+
+    .feedback-banner.success { background: #dcfce7; color: #15803d; }
+    .feedback-banner.error { background: #fee2e2; color: #b91c1c; }
+
+    /* 模块三：卡片翻转配对游戏 */
+    .m3-header-status {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      padding: 10px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: var(--font-kaiti);
+      font-size: 1.1rem;
+    }
+
+    .m3-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+      perspective: 1000px;
+    }
+
+    @media (max-width: 480px) {
+      .m3-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+    }
+
+    .flip-card {
+      background-color: transparent;
+      aspect-ratio: 1 / 1.1;
+      cursor: pointer;
+      perspective: 1000px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-style: preserve-3d;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border: 3px solid #ffffff;
+      overflow: hidden;
+    }
+
+    .flip-card-front {
+      background: linear-gradient(135deg, #a5b4fc, #6366f1);
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .flip-card-front::after {
+      content: "❓";
+      font-size: 1.8rem;
+    }
+
+    .flip-card-back {
+      background: white;
+      transform: rotateY(180deg);
+      border: 3px solid var(--accent-blue);
+    }
+
+    .flip-card.matched .flip-card-back {
+      border-color: var(--correct-green);
+      background: #f0fdf4;
+    }
+
+    .card-content-img {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-content-word {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-word-zh {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: var(--font-kaiti);
+    }
+
+    .card-word-py {
+      font-size: 0.75rem;
+      color: var(--accent-blue);
+      font-weight: bold;
+      font-family: sans-serif;
+    }
+
+    /* 模块四：学习记录 */
+    .records-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .record-item {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .record-info-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--text-main);
+      font-family: var(--font-kaiti);
+    }
+
+    .record-info-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .record-badge {
+      font-weight: bold;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: var(--font-kaiti);
+    }
+
+    /* 电子证书 Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .cert-modal-box {
+      background: white;
+      border-radius: 28px;
+      padding: 20px;
+      width: 100%;
+      max-width: 750px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+
+    .cert-canvas-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      background: #fff;
+    }
+
+    canvas#cert-canvas {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      display: block;
+    }
+
+    .cert-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .review-list {
+      width: 100%;
+      max-height: 350px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #fff5f5;
+      padding: 10px 15px;
+      border-radius: 16px;
+      border: 2px solid #fecaca;
+    }
+
+    .review-item img, .review-item svg {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    @media (max-width: 600px) {
+      .app-title-zh { font-size: 2.4rem; }
+      .app-title-ms { font-size: 1.4rem; }
+      .word-zh { font-size: 2.8rem; }
+      .m1-image-box { width: 170px; height: 170px; }
+      .quiz-img-box { width: 150px; height: 150px; }
+      .quiz-options-grid { grid-template-columns: 1fr; }
+      .opt-zh { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast 消息浮条 -->
+  <div id="toast-msg">提示信息</div>
+
+  <div id="app-container">
+    
+    <!-- 全局顶部栏 -->
+    <header id="global-header">
+      <div class="student-badge">
+        <span>👤</span>
+        <span id="header-student-name">未输入姓名 / Tiada Nama</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-small" onclick="openNameModal()">✏️ 修改姓名 / Edit</button>
+        <button class="btn-nav-home" id="btn-home-header" onclick="navToMenu()" style="display: none;">🏠 主页 / Menu</button>
+      </div>
+    </header>
+
+    <!-- VIEW 0: START MENU 开始菜单 -->
+    <section id="view-start-menu" class="view-screen active">
+      <div class="menu-header">
+        <h1 class="app-title-zh">职业名称</h1>
+        <h2 class="app-title-ms">Pekerjaan</h2>
+        <div class="app-subtitle">
+          看图认字，听音学习，快乐成长！<br>
+          <small>Lihat gambar, kenali perkataan dan belajar dengan gembira!</small>
+        </div>
+      </div>
+
+      <div class="name-input-card">
+        <div class="name-input-label">
+          学生姓名 / Nama Murid:
+        </div>
+        <input type="text" id="input-student-name" class="name-input-box" placeholder="请输入姓名 / Masukkan nama" autocomplete="off" />
+      </div>
+
+      <div class="menu-grid">
+        <button class="menu-btn menu-btn-1" onclick="startModule(1)">
+          <span class="menu-btn-icon">📖</span>
+          <span class="menu-btn-title-zh">认读词语</span>
+          <span class="menu-btn-title-ms">Kenali Perkataan</span>
+        </button>
+        <button class="menu-btn menu-btn-2" onclick="startModule(2)">
+          <span class="menu-btn-icon">🔍</span>
+          <span class="menu-btn-title-zh">看图认字</span>
+          <span class="menu-btn-title-ms">Padankan Gambar</span>
+        </button>
+        <button class="menu-btn menu-btn-3" onclick="startModule(3)">
+          <span class="menu-btn-icon">🃏</span>
+          <span class="menu-btn-title-zh">配对游戏</span>
+          <span class="menu-btn-title-ms">Permainan Padanan</span>
+        </button>
+        <button class="menu-btn menu-btn-4" onclick="startModule(4)">
+          <span class="menu-btn-icon">🏆</span>
+          <span class="menu-btn-title-zh">学习记录</span>
+          <span class="menu-btn-title-ms">Rekod Pembelajaran</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 1: 认读词语 MODULE 1 -->
+    <section id="view-module-1" class="view-screen">
+      <div class="module-title-container">
+        <div class="module-title-zh">认读词语</div>
+        <div class="module-title-ms">Kenali Perkataan</div>
+      </div>
+
+      <div class="m1-card">
+        <div class="quiz-progress" id="m1-progress">第 1 / 14 个词语</div>
+        
+        <div class="m1-image-box" id="m1-img-container"></div>
+        
+        <div class="word-pinyin" id="m1-pinyin">jǐng chá</div>
+        <div class="word-zh" id="m1-zh">警察</div>
+        <div class="word-ms" id="m1-ms">Polis</div>
+
+        <div class="audio-controls">
+          <button class="btn-audio" onclick="playCurrentWordAudio(1.0)">🔊 朗读发音</button>
+          <button class="btn-audio btn-audio-slow" onclick="playCurrentWordAudio(0.6)">🐢 慢速发音</button>
+        </div>
+      </div>
+
+      <div class="m1-nav-bar">
+        <button class="btn-action" id="m1-btn-prev" onclick="m1Nav(-1)">⬅️ 上一个</button>
+        <button class="btn-action" onclick="playCurrentWordAudio(1.0)">🔄 重复</button>
+        <button class="btn-action" id="m1-btn-next" onclick="m1Nav(1)">下一个 ➡️</button>
+      </div>
+
+      <button class="btn-action m1-finish-btn" id="m1-btn-finish" onclick="m1Finish()">🎓 完成学习 / Tamatkan Pembelajaran</button>
+    </section>
+
+    <!-- VIEW 2: 看图认字 MODULE 2 -->
+    <section id="view-module-2" class="view-screen">
+      <div class="module-title-container">
+        <div class="module-title-zh">看图认字</div>
+        <div class="module-title-ms">Padankan Gambar dengan Perkataan</div>
+      </div>
+
+      <div class="quiz-progress" id="m2-progress">第 1 题，共 14 题 | Soalan 1 daripada 14</div>
+
+      <div class="quiz-card">
+        <div class="quiz-img-box" id="m2-img-container"></div>
+        
+        <div id="m2-feedback" class="feedback-banner" style="visibility: hidden;">提示信息</div>
+
+        <div class="quiz-options-grid" id="m2-options-container"></div>
+      </div>
+
+      <div class="m1-nav-bar" style="max-width: 550px;">
+        <button class="btn-action" id="m2-btn-prev" onclick="m2Nav(-1)">⬅️ 上一题</button>
+        <button class="btn-action" onclick="playQuizTargetAudio()">🔊 听题目</button>
+        <button class="btn-action" id="m2-btn-next" onclick="m2Nav(1)" disabled>下一题 ➡️</button>
+      </div>
+    </section>
+
+    <!-- VIEW 3: 配对游戏 MODULE 3 -->
+    <section id="view-module-3" class="view-screen">
+      <div class="module-title-container">
+        <div class="module-title-zh">职业配对游戏</div>
+        <div class="module-title-ms">Permainan Padanan Pekerjaan</div>
+      </div>
+
+      <div class="m3-header-status">
+        <div>完成配对: <span id="m3-matched-count" style="color:var(--correct-green);">0</span> / 10</div>
+        <div>游戏时间 Masa: <span id="m3-timer" style="color:var(--accent-coral);">00:00</span></div>
+      </div>
+
+      <div id="m3-feedback" class="feedback-banner" style="visibility: hidden; max-width: 600px; margin-bottom: 10px;">提示信息</div>
+
+      <div class="m3-grid" id="m3-card-grid"></div>
+    </section>
+
+    <!-- VIEW 4: 学习记录 MODULE 4 -->
+    <section id="view-module-4" class="view-screen">
+      <div class="module-title-container">
+        <div class="module-title-zh">学习记录</div>
+        <div class="module-title-ms">Rekod Pembelajaran</div>
+      </div>
+
+      <div class="records-card">
+        <div class="record-item">
+          <div>
+            <div class="record-info-title">📖 模块一：认读词语</div>
+            <div class="record-info-sub" id="rec-m1-date">完成状态: 未完成</div>
+          </div>
+          <div>
+            <span class="record-badge" id="rec-m1-status">0 / 14 词语</span>
+            <button class="btn-small" onclick="showCertFromRecord(1)" id="btn-rec-cert-1" style="display:none; margin-left: 5px;">查看证书</button>
+          </div>
+        </div>
+
+        <div class="record-item">
+          <div>
+            <div class="record-info-title">🔍 模块二：看图认字</div>
+            <div class="record-info-sub" id="rec-m2-date">完成状态: 未完成</div>
+          </div>
+          <div>
+            <span class="record-badge" id="rec-m2-status">最高得分: -</span>
+            <button class="btn-small" onclick="showCertFromRecord(2)" id="btn-rec-cert-2" style="display:none; margin-left: 5px;">查看证书</button>
+          </div>
+        </div>
+
+        <div class="record-item">
+          <div>
+            <div class="record-info-title">🃏 模块三：配对游戏</div>
+            <div class="record-info-sub" id="rec-m3-date">完成状态: 未完成</div>
+          </div>
+          <div>
+            <span class="record-badge" id="rec-m3-status">最佳用时: -</span>
+            <button class="btn-small" onclick="showCertFromRecord(3)" id="btn-rec-cert-3" style="display:none; margin-left: 5px;">查看证书</button>
+          </div>
+        </div>
+
+        <button class="btn-action" style="background: var(--wrong-red); box-shadow: 0 4px 0 #b91c1c; margin-top: 15px;" onclick="clearAllRecords()">🗑️ 清除所有记录 / Padam Rekod</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- CERTIFICATE MODAL 证书弹窗 -->
+  <div class="modal-overlay" id="modal-certificate">
+    <div class="cert-modal-box">
+      <h2 style="color: var(--accent-purple); font-family: var(--font-kaiti);" id="cert-modal-head-title">荣誉证书</h2>
+      
+      <div class="cert-canvas-container">
+        <canvas id="cert-canvas" width="1200" height="850"></canvas>
+      </div>
+
+      <div class="cert-actions" id="cert-actions-container">
+        <button class="btn-action" style="background: #2ecc71; box-shadow:0 4px 0 #27ae60;" onclick="downloadCertPNG()">💾 保存证书图片 / Simpan Sijil</button>
+        <button class="btn-action" style="background: #f59e0b; box-shadow:0 4px 0 #d97706;" id="btn-review-wrong" onclick="openReviewModal()" style="display:none;">🔍 查看错题 / Lihat Salah</button>
+        <button class="btn-action" style="background: var(--accent-blue); box-shadow:0 4px 0 #0284c7;" id="btn-replay-module" onclick="replayCurrentModule()">🔄 再次学习 / Main Semula</button>
+        <button class="btn-action" style="background: var(--primary-coral); box-shadow:0 4px 0 #b91c1c;" onclick="closeCertModal(); navToMenu();">🏠 返回主页 / Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WRONG ANSWERS REVIEW MODAL 错题复习弹窗 -->
+  <div class="modal-overlay" id="modal-review">
+    <div class="cert-modal-box">
+      <h2 style="color: var(--wrong-red); font-family: var(--font-kaiti);">错题复习 / Jawapan Salah</h2>
+      <div class="review-list" id="review-list-content"></div>
+      <button class="btn-action" onclick="closeReviewModal()">关闭 / Tutup</button>
+    </div>
+  </div>
+
+  <!-- EDIT NAME MODAL 修改姓名弹窗 -->
+  <div class="modal-overlay" id="modal-name">
+    <div class="cert-modal-box" style="max-width: 400px;">
+      <h3 style="font-family: var(--font-kaiti);">修改学生姓名</h3>
+      <input type="text" id="modal-input-name" class="name-input-box" placeholder="输入姓名" />
+      <div style="display: flex; gap: 10px; width: 100%;">
+        <button class="btn-action" onclick="saveNameFromModal()">保存 / Simpan</button>
+        <button class="btn-action" style="background: #cbd5e1; box-shadow: 0 4px 0 #94a3b8;" onclick="closeNameModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===================================================
+       1. 14个职业词汇数据（包含图像路径与备用 SVG 插画）
+       =================================================== */
+    const VOCAB_DATA = [
+      { id: "police",      zh: "警察",     pinyin: "jǐng chá",       ms: "Polis",                 imgSrc: "images/police.png" },
+      { id: "firefighter", zh: "消防员",   pinyin: "xiāo fáng yuán", ms: "Ahli Bomba",            imgSrc: "images/firefighter.png" },
+      { id: "doctor",      zh: "医生",     pinyin: "yī shēng",       ms: "Doktor",                imgSrc: "images/doctor.png" },
+      { id: "nurse",       zh: "护士",     pinyin: "hù shi",         ms: "Jururawat",             imgSrc: "images/nurse.png" },
+      { id: "teacher",     zh: "老师",     pinyin: "lǎo shī",        ms: "Guru",                  imgSrc: "images/teacher.png" },
+      { id: "soldier",     zh: "军人",     pinyin: "jūn rén",        ms: "Tentera",               imgSrc: "images/soldier.png" },
+      { id: "courier",     zh: "快递员",   pinyin: "kuài dì yuán",   ms: "Penghantar Ekspres",    imgSrc: "images/courier.png" },
+      { id: "security",    zh: "保安",     pinyin: "bǎo ān",         ms: "Pengawal Keselamatan",  imgSrc: "images/security.png" },
+      { id: "chef",        zh: "厨师",     pinyin: "chú shī",        ms: "Tukang Masak",          imgSrc: "images/chef.png" },
+      { id: "bus_driver",  zh: "巴士司机", pinyin: "bā shì sī jī",   ms: "Pemandu Bas",           imgSrc: "images/bus_driver.png" },
+      { id: "pilot",       zh: "飞行员",   pinyin: "fēi xíng yuán",  ms: "Juruterbang",           imgSrc: "images/pilot.png" },
+      { id: "engineer",    zh: "工程师",   pinyin: "gōng chéng shī", ms: "Jurutera",              imgSrc: "images/engineer.png" },
+      { id: "lawyer",      zh: "律师",     pinyin: "lǜ shī",         ms: "Peguam",                imgSrc: "images/lawyer.png" },
+      { id: "judge",       zh: "法官",     pinyin: "fǎ guān",        ms: "Hakim",                 imgSrc: "images/judge.png" }
+    ];
+
+    // SVG 独立矢量卡通备用图生成器（本地 PNG 未找到时无缝展示）
+    function getFallbackImgHTML(text) {
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>
+        <rect width='100%' height='100%' fill='#f1f5f9' rx='16'/>
+        <text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-size='50'>🎨</text>
+        <text x='50%' y='70%' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='#475569' font-family='sans-serif' font-weight='bold'>${text}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    /* ===================================================
+       2. 应用状态与 LocalStorage 持久化管理
+       =================================================== */
+    let studentName = "";
+    let currentView = "view-start-menu";
+
+    // Web Speech API 语音合成对象
+    const synth = window.speechSynthesis;
+
+    // 学习记录数据
+    let learningRecords = {
+      m1: { completed: false, visited: [], date: null },
+      m2: { completed: false, score: 0, total: 14, accuracy: 0, date: null, wrongItems: [] },
+      m3: { completed: false, pairs: 10, timeSeconds: 0, date: null }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      updateHeaderStudentDisplay();
+      
+      document.getElementById('input-student-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          saveStudentNameFromInput();
+        }
+      });
+    });
+
+    function loadSavedData() {
+      const savedName = localStorage.getItem('preschool_student_name');
+      if (savedName) {
+        studentName = savedName;
+        document.getElementById('input-student-name').value = savedName;
+      }
+
+      const savedRecords = localStorage.getItem('preschool_learning_records');
+      if (savedRecords) {
+        try {
+          learningRecords = JSON.parse(savedRecords);
+        } catch (e) {
+          console.error("解析本地记录失败", e);
+        }
+      }
+    }
+
+    function saveStudentNameFromInput() {
+      const val = document.getElementById('input-student-name').value.trim();
+      if (val) {
+        studentName = val;
+        localStorage.setItem('preschool_student_name', studentName);
+        updateHeaderStudentDisplay();
+        showToast("姓名已保存！ / Nama dikemaskini!", "success");
+      }
+    }
+
+    function updateHeaderStudentDisplay() {
+      const el = document.getElementById('header-student-name');
+      if (studentName) {
+        el.innerText = studentName;
+      } else {
+        el.innerText = "未输入姓名 / Tiada Nama";
+      }
+    }
+
+    function checkNameEntered() {
+      const val = document.getElementById('input-student-name').value.trim();
+      if (val) {
+        studentName = val;
+        localStorage.setItem('preschool_student_name', studentName);
+        updateHeaderStudentDisplay();
+        return true;
+      }
+      
+      if (!studentName) {
+        showToast("请先输入学生姓名。\nSila masukkan nama murid terlebih dahulu.", "warning");
+        document.getElementById('input-student-name').focus();
+        return false;
+      }
+      return true;
+    }
+
+    function saveRecordsToStorage() {
+      localStorage.setItem('preschool_learning_records', JSON.stringify(learningRecords));
+    }
+
+    function clearAllRecords() {
+      if (confirm("确定要清除所有学习记录吗？\nAdakah anda pasti untuk memadam semua rekod?")) {
+        learningRecords = {
+          m1: { completed: false, visited: [], date: null },
+          m2: { completed: false, score: 0, total: 14, accuracy: 0, date: null, wrongItems: [] },
+          m3: { completed: false, pairs: 10, timeSeconds: 0, date: null }
+        };
+        saveRecordsToStorage();
+        renderModule4Records();
+        showToast("所有记录已清除！ / Rekod dipadam!", "success");
+      }
+    }
+
+    /* 视图导航助手 */
+    function switchView(viewId) {
+      document.querySelectorAll('.view-screen').forEach(el => el.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+      currentView = viewId;
+
+      const btnHome = document.getElementById('btn-home-header');
+      if (viewId === 'view-start-menu') {
+        btnHome.style.display = 'none';
+      } else {
+        btnHome.style.display = 'flex';
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function navToMenu() {
+      m3StopTimer();
+      switchView('view-start-menu');
+    }
+
+    function startModule(modNum) {
+      if (!checkNameEntered()) return;
+
+      if (modNum === 1) {
+        initModule1();
+        switchView('view-module-1');
+      } else if (modNum === 2) {
+        initModule2();
+        switchView('view-module-2');
+      } else if (modNum === 3) {
+        initModule3();
+        switchView('view-module-3');
+      } else if (modNum === 4) {
+        renderModule4Records();
+        switchView('view-module-4');
+      }
+    }
+
+    /* 提示横幅浮条 */
+    function showToast(msg, type = "info") {
+      const toast = document.getElementById('toast-msg');
+      toast.innerText = msg;
+      toast.className = `show ${type}`;
+      setTimeout(() => {
+        toast.className = "";
+      }, 3000);
+    }
+
+    /* TTS 标准普通话语音朗读 */
+    function playTTS(text, rate = 1.0) {
+      if (!('speechSynthesis' in window)) {
+        showToast("您的设备/浏览器不支持语音朗读。\nPeranti anda tidak menyokong fungsi suara.", "error");
+        return;
+      }
+      synth.cancel(); // 停止当前正在播放的发音
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = rate;
+      
+      utterance.onerror = function() {
+        showToast("语音播放提示：请确保设备已开启系统声音。", "warning");
+      };
+      
+      synth.speak(utterance);
+    }
+
+    /* 修改姓名 Modal 弹窗控制 */
+    function openNameModal() {
+      document.getElementById('modal-input-name').value = studentName;
+      document.getElementById('modal-name').classList.add('active');
+    }
+
+    function closeNameModal() {
+      document.getElementById('modal-name').classList.remove('active');
+    }
+
+    function saveNameFromModal() {
+      const val = document.getElementById('modal-input-name').value.trim();
+      if (val) {
+        studentName = val;
+        document.getElementById('input-student-name').value = val;
+        localStorage.setItem('preschool_student_name', val);
+        updateHeaderStudentDisplay();
+        closeNameModal();
+        showToast("姓名更新成功！", "success");
+      } else {
+        showToast("姓名不能为空！", "warning");
+      }
+    }
+
+
+    /* ===================================================
+       3. 模块一：认读词语 (Kenali Perkataan) 逻辑
+       =================================================== */
+    let m1CurrentIdx = 0;
+    let m1VisitedSet = new Set();
+
+    function initModule1() {
+      m1CurrentIdx = 0;
+      m1VisitedSet = new Set(learningRecords.m1.visited || []);
+      renderM1Card();
+    }
+
+    function renderM1Card() {
+      const item = VOCAB_DATA[m1CurrentIdx];
+      m1VisitedSet.add(m1CurrentIdx);
+
+      learningRecords.m1.visited = Array.from(m1VisitedSet);
+      saveRecordsToStorage();
+
+      document.getElementById('m1-progress').innerText = `第 ${m1CurrentIdx + 1} / 14 个词语`;
+      
+      const fallbackSrc = getFallbackImgHTML(item.zh);
+      document.getElementById('m1-img-container').innerHTML = 
+        `<img src="${item.imgSrc}" alt="${item.zh}" class="vocab-img" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
+
+      document.getElementById('m1-pinyin').innerText = item.pinyin;
+      document.getElementById('m1-zh').innerText = item.zh;
+      document.getElementById('m1-ms').innerText = item.ms;
+
+      document.getElementById('m1-btn-prev').disabled = (m1CurrentIdx === 0);
+      document.getElementById('m1-btn-next').disabled = (m1CurrentIdx === VOCAB_DATA.length - 1);
+
+      playTTS(item.zh, 1.0);
+    }
+
+    function m1Nav(dir) {
+      m1CurrentIdx += dir;
+      if (m1CurrentIdx < 0) m1CurrentIdx = 0;
+      if (m1CurrentIdx >= VOCAB_DATA.length) m1CurrentIdx = VOCAB_DATA.length - 1;
+      renderM1Card();
+    }
+
+    function playCurrentWordAudio(rate = 1.0) {
+      const item = VOCAB_DATA[m1CurrentIdx];
+      playTTS(item.zh, rate);
+    }
+
+    function m1Finish() {
+      const today = new Date().toISOString().split('T')[0];
+      learningRecords.m1.completed = true;
+      learningRecords.m1.date = today;
+      saveRecordsToStorage();
+
+      generateCertificateCanvas(1);
+      openCertModal("认读完成证书");
+    }
+
+
+    /* ===================================================
+       4. 模块二：看图认字 (Padankan Gambar) 逻辑
+       =================================================== */
+    let m2Questions = [];
+    let m2CurrentIdx = 0;
+    let m2Score = 0;
+    let m2WrongList = [];
+
+    function initModule2() {
+      m2CurrentIdx = 0;
+      m2Score = 0;
+      m2WrongList = [];
+      
+      // 生成 14 道不重复题目
+      const indices = Array.from({length: 14}, (_, i) => i);
+      shuffleArray(indices);
+
+      m2Questions = indices.map(targetIdx => {
+        const targetObj = VOCAB_DATA[targetIdx];
+        
+        // 从其余 13 个职业中随机抽取 3 个干扰项
+        const otherIndices = Array.from({length: 14}, (_, i) => i).filter(i => i !== targetIdx);
+        shuffleArray(otherIndices);
+        const distractors = otherIndices.slice(0, 3).map(i => VOCAB_DATA[i]);
+
+        const options = [targetObj, ...distractors];
+        shuffleArray(options);
+
+        return {
+          target: targetObj,
+          options: options,
+          solved: false,
+          firstAttemptCorrect: true,
+          selectedOptId: null
+        };
+      });
+
+      renderM2Question();
+    }
+
+    function renderM2Question() {
+      const q = m2Questions[m2CurrentIdx];
+
+      document.getElementById('m2-progress').innerText = `第 ${m2CurrentIdx + 1} 题，共 14 题 | Soalan ${m2CurrentIdx + 1} daripada 14`;
+      
+      const fallbackSrc = getFallbackImgHTML(q.target.zh);
+      document.getElementById('m2-img-container').innerHTML = 
+        `<img src="${q.target.imgSrc}" alt="${q.target.zh}" class="vocab-img" onerror="this.onerror=null; this.src='${fallbackSrc}';">`;
+
+      const fb = document.getElementById('m2-feedback');
+      fb.style.visibility = 'hidden';
+      fb.className = 'feedback-banner';
+
+      const container = document.getElementById('m2-options-container');
+      container.innerHTML = '';
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('div');
+        btn.className = 'quiz-option-btn';
+
+        if (q.solved && opt.id === q.target.id) {
+          btn.classList.add('correct');
+        } else if (q.selectedOptId === opt.id && opt.id !== q.target.id) {
+          btn.classList.add('wrong');
+        }
+
+        btn.innerHTML = `
+          <div class="opt-pinyin">${opt.pinyin}</div>
+          <div class="opt-zh">${opt.zh}</div>
+          <button class="opt-speaker" onclick="event.stopPropagation(); playTTS('${opt.zh}', 1.0)">🔊</button>
+        `;
+
+        btn.onclick = () => handleM2Answer(opt, btn);
+        container.appendChild(btn);
+      });
+
+      document.getElementById('m2-btn-prev').disabled = (m2CurrentIdx === 0);
+      document.getElementById('m2-btn-next').disabled = !q.solved;
+    }
+
+    function handleM2Answer(opt, btnEl) {
+      const q = m2Questions[m2CurrentIdx];
+      const fb = document.getElementById('m2-feedback');
+
+      q.selectedOptId = opt.id;
+
+      if (opt.id === q.target.id) {
+        if (!q.solved) {
+          q.solved = true;
+          // 仅在首次尝试即答对时计入成绩分数
+          if (q.firstAttemptCorrect) {
+            m2Score++;
+          }
+        }
+
+        btnEl.classList.remove('wrong');
+        btnEl.classList.add('correct');
+
+        fb.innerText = "太棒了！答对了！ / Bagus! Jawapan betul!";
+        fb.className = "feedback-banner success";
+        fb.style.visibility = "visible";
+
+        playTTS("太棒了！答对了！", 1.1);
+
+        document.getElementById('m2-btn-next').disabled = false;
+
+        setTimeout(() => {
+          if (m2CurrentIdx < 13 && q.solved) {
+            m2Nav(1);
+          } else if (m2CurrentIdx === 13 && q.solved) {
+            m2Finish();
+          }
+        }, 1200);
+
+      } else {
+        q.firstAttemptCorrect = false;
+        
+        if (!m2WrongList.some(w => w.id === q.target.id)) {
+          m2WrongList.push(q.target);
+        }
+
+        btnEl.classList.add('wrong');
+        fb.innerText = "再试一次，加油！ / Cuba lagi! Anda boleh melakukannya!";
+        fb.className = "feedback-banner error";
+        fb.style.visibility = "visible";
+
+        playTTS("再试一次，加油！", 1.0);
+      }
+    }
+
+    function playQuizTargetAudio() {
+      const q = m2Questions[m2CurrentIdx];
+      playTTS(q.target.zh, 1.0);
+    }
+
+    function m2Nav(dir) {
+      const q = m2Questions[m2CurrentIdx];
+      if (dir === 1 && !q.solved) {
+        showToast("请先答对当前题目再进行下一题！", "warning");
+        return;
+      }
+      
+      m2CurrentIdx += dir;
+      if (m2CurrentIdx < 0) m2CurrentIdx = 0;
+      if (m2CurrentIdx >= 14) {
+        m2Finish();
+        return;
+      }
+      renderM2Question();
+    }
+
+    function m2Finish() {
+      const accuracy = parseFloat(((m2Score / 14) * 100).toFixed(1));
+      const today = new Date().toISOString().split('T')[0];
+
+      learningRecords.m2 = {
+        completed: true,
+        score: m2Score,
+        total: 14,
+        accuracy: accuracy,
+        date: today,
+        wrongItems: m2WrongList
+      };
+      saveRecordsToStorage();
+
+      generateCertificateCanvas(2);
+      openCertModal("挑战成功证书");
+    }
+
+
+    /* ===================================================
+       5. 模块三：配对游戏 (Permainan Padanan) 逻辑
+       =================================================== */
+    let m3Cards = [];
+    let m3FlippedCards = [];
+    let m3MatchedPairs = 0;
+    let m3TimerInterval = null;
+    let m3ElapsedSeconds = 0;
+
+    function initModule3() {
+      m3StopTimer();
+      m3ElapsedSeconds = 0;
+      m3MatchedPairs = 0;
+      m3FlippedCards = [];
+      document.getElementById('m3-matched-count').innerText = "0";
+      document.getElementById('m3-timer').innerText = "00:00";
+
+      const fb = document.getElementById('m3-feedback');
+      fb.style.visibility = 'hidden';
+
+      // 随机抽取 10 个职业组
+      const copyData = [...VOCAB_DATA];
+      shuffleArray(copyData);
+      const selected10 = copyData.slice(0, 10);
+
+      // 生成 20 张卡片（10张词语卡，10张图片卡）
+      m3Cards = [];
+      selected10.forEach((item, idx) => {
+        m3Cards.push({
+          uid: `w_${idx}_${item.id}`,
+          vocabId: item.id,
+          type: 'word',
+          data: item,
+          flipped: false,
+          matched: false
+        });
+        m3Cards.push({
+          uid: `p_${idx}_${item.id}`,
+          vocabId: item.id,
+          type: 'picture',
+          data: item,
+          flipped: false,
+          matched: false
+        });
+      });
+
+      shuffleArray(m3Cards);
+      renderM3Grid();
+      m3StartTimer();
+    }
+
+    function renderM3Grid() {
+      const grid = document.getElementById('m3-card-grid');
+      grid.innerHTML = '';
+
+      m3Cards.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = `flip-card ${card.flipped ? 'flipped' : ''} ${card.matched ? 'matched' : ''}`;
+        
+        let innerHTML = `
+          <div class="flip-card-inner">
+            <div class="flip-card-front"></div>
+            <div class="flip-card-back">
+        `;
+
+        if (card.type === 'picture') {
+          const fallbackSrc = getFallbackImgHTML(card.data.zh);
+          innerHTML += `<div class="card-content-img"><img src="${card.data.imgSrc}" alt="${card.data.zh}" class="vocab-img" onerror="this.onerror=null; this.src='${fallbackSrc}';"></div>`;
+        } else {
+          innerHTML += `
+            <div class="card-content-word">
+              <div class="card-word-py">${card.data.pinyin}</div>
+              <div class="card-word-zh">${card.data.zh}</div>
+            </div>
+          `;
+        }
+
+        innerHTML += `</div></div>`;
+        cardEl.innerHTML = innerHTML;
+
+        cardEl.onclick = () => handleM3CardClick(index);
+        grid.appendChild(cardEl);
+      });
+    }
+
+    function handleM3CardClick(index) {
+      const card = m3Cards[index];
+
+      if (card.flipped || card.matched || m3FlippedCards.length >= 2) return;
+
+      card.flipped = true;
+      m3FlippedCards.push({ index, card });
+      renderM3Grid();
+
+      if (card.type === 'word') {
+        playTTS(card.data.zh, 1.0);
+      }
+
+      if (m3FlippedCards.length === 2) {
+        checkM3Match();
+      }
+    }
+
+    function checkM3Match() {
+      const [itemA, itemB] = m3FlippedCards;
+      const fb = document.getElementById('m3-feedback');
+
+      if (itemA.card.vocabId === itemB.card.vocabId) {
+        itemA.card.matched = true;
+        itemB.card.matched = true;
+        m3MatchedPairs++;
+
+        document.getElementById('m3-matched-count').innerText = m3MatchedPairs;
+
+        fb.innerText = "配对成功！ / Padanan betul!";
+        fb.className = "feedback-banner success";
+        fb.style.visibility = "visible";
+
+        playTTS("配对成功！", 1.2);
+        m3FlippedCards = [];
+
+        if (m3MatchedPairs === 10) {
+          m3StopTimer();
+          setTimeout(() => {
+            m3Finish();
+          }, 800);
+        }
+      } else {
+        fb.innerText = "再试一次！ / Cuba lagi!";
+        fb.className = "feedback-banner error";
+        fb.style.visibility = "visible";
+
+        setTimeout(() => {
+          itemA.card.flipped = false;
+          itemB.card.flipped = false;
+          m3FlippedCards = [];
+          renderM3Grid();
+        }, 1000);
+      }
+    }
+
+    function m3StartTimer() {
+      m3StopTimer();
+      m3ElapsedSeconds = 0;
+      m3TimerInterval = setInterval(() => {
+        m3ElapsedSeconds++;
+        const mins = String(Math.floor(m3ElapsedSeconds / 60)).padStart(2, '0');
+        const secs = String(m3ElapsedSeconds % 60).padStart(2, '0');
+        document.getElementById('m3-timer').innerText = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function m3StopTimer() {
+      if (m3TimerInterval) {
+        clearInterval(m3TimerInterval);
+        m3TimerInterval = null;
+      }
+    }
+
+    function m3Finish() {
+      const today = new Date().toISOString().split('T')[0];
+      learningRecords.m3 = {
+        completed: true,
+        pairs: 10,
+        timeSeconds: m3ElapsedSeconds,
+        date: today
+      };
+      saveRecordsToStorage();
+
+      generateCertificateCanvas(3);
+      openCertModal("配对高手证书");
+    }
+
+
+    /* ===================================================
+       6. 模块四：学习记录渲染
+       =================================================== */
+    function renderModule4Records() {
+      const m1 = learningRecords.m1;
+      document.getElementById('rec-m1-date').innerText = m1.completed ? `完成日期: ${m1.date}` : "完成状态: 未完成";
+      document.getElementById('rec-m1-status').innerText = `${m1.visited ? m1.visited.length : 0} / 14 词语`;
+      document.getElementById('btn-rec-cert-1').style.display = m1.completed ? 'inline-block' : 'none';
+
+      const m2 = learningRecords.m2;
+      document.getElementById('rec-m2-date').innerText = m2.completed ? `完成日期: ${m2.date}` : "完成状态: 未完成";
+      document.getElementById('rec-m2-status').innerText = m2.completed ? `得分: ${m2.score}/14 (${m2.accuracy}%)` : "最高得分: -";
+      document.getElementById('btn-rec-cert-2').style.display = m2.completed ? 'inline-block' : 'none';
+
+      const m3 = learningRecords.m3;
+      const mins = String(Math.floor((m3.timeSeconds || 0) / 60)).padStart(2, '0');
+      const secs = String((m3.timeSeconds || 0) % 60).padStart(2, '0');
+      document.getElementById('rec-m3-date').innerText = m3.completed ? `完成日期: ${m3.date}` : "完成状态: 未完成";
+      document.getElementById('rec-m3-status').innerText = m3.completed ? `最佳用时: ${mins}:${secs}` : "最佳用时: -";
+      document.getElementById('btn-rec-cert-3').style.display = m3.completed ? 'inline-block' : 'none';
+    }
+
+    function showCertFromRecord(modNum) {
+      generateCertificateCanvas(modNum);
+      openCertModal("已获荣誉证书");
+    }
+
+
+    /* ===================================================
+       7. CANVAS 高清电子证书绘制与导出
+       =================================================== */
+    let currentCertModule = 1;
+
+    function generateCertificateCanvas(modNum) {
+      currentCertModule = modNum;
+      const canvas = document.getElementById('cert-canvas');
+      const ctx = canvas.getContext('2d');
+
+      const width = 1200;
+      const height = 850;
+      canvas.width = width;
+      canvas.height = height;
+
+      // 渐变背景
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#fffdf0');
+      bgGrad.addColorStop(1, '#e0f7fa');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 双层精致边框
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 16;
+      ctx.strokeRect(20, 20, width - 40, height - 40);
+
+      ctx.strokeStyle = '#4ecdc4';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(36, 36, width - 72, height - 72);
+
+      // 白色主卡片底板
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(50, 50, width - 100, height - 100, 24);
+      ctx.fill();
+
+      // 顶部红色丝带横幅
+      ctx.fillStyle = '#ff6b6b';
+      ctx.beginPath();
+      ctx.moveTo(250, 50);
+      ctx.lineTo(950, 50);
+      ctx.lineTo(920, 140);
+      ctx.lineTo(280, 140);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 44px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+      ctx.textAlign = 'center';
+
+      let certTitleZh = "";
+      if (modNum === 1) certTitleZh = "华文认读小达人";
+      else if (modNum === 2) certTitleZh = "职业名称认字挑战成功";
+      else certTitleZh = "职业配对小高手";
+
+      ctx.fillText(certTitleZh, width / 2, 110);
+
+      // 学生姓名区
+      ctx.fillStyle = '#2c3e50';
+      ctx.font = 'bold 32px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+      ctx.fillText(`恭喜学生 / Tahniah kepada:`, width / 2, 210);
+
+      ctx.fillStyle = '#f0f9ff';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(width / 2 - 250, 235, 500, 75, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#0284c7';
+      ctx.font = 'bold 46px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+      ctx.fillText(studentName || "未输入姓名", width / 2, 288);
+
+      // 主文案说明
+      ctx.fillStyle = '#334155';
+      ctx.font = '30px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+
+      if (modNum === 1) {
+        ctx.fillText(`恭喜你完成《职业名称》14 个词语的认读学习！`, width / 2, 360);
+        ctx.font = '22px "Comic Sans MS", sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(`Tahniah! Anda telah selesai mempelajari 14 perkataan bertajuk “Pekerjaan”!`, width / 2, 395);
+      } else if (modNum === 2) {
+        ctx.fillText(`在《职业名称》看图认字挑战中表现优异！`, width / 2, 360);
+        ctx.font = '22px "Comic Sans MS", sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(`Telah mencapai kejayaan cemerlang dalam cabaran mengenal perkataan!`, width / 2, 395);
+      } else {
+        ctx.fillText(`恭喜你成功完成 10 组职业配对！`, width / 2, 360);
+        ctx.font = '22px "Comic Sans MS", sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(`Tahniah! Anda berjaya menyelesaikan 10 pasangan pekerjaan!`, width / 2, 395);
+      }
+
+      // 学习数据信息面板
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(200, 430, 800, 180, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 26px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+
+      const today = new Date().toISOString().split('T')[0];
+
+      ctx.fillText(`📌 学习主题 / Tema: 职业名称 Pekerjaan`, 240, 480);
+      
+      if (modNum === 1) {
+        ctx.fillText(`📊 完成词语 / Progress: 14 / 14`, 240, 525);
+        ctx.fillText(`📅 完成日期 / Tarikh: ${learningRecords.m1.date || today}`, 240, 570);
+      } else if (modNum === 2) {
+        const score = learningRecords.m2.score || 0;
+        const acc = learningRecords.m2.accuracy || 0;
+        ctx.fillText(`📊 答对题数 / Score: ${score} / 14  (正确率 Accuracy: ${acc}%)`, 240, 525);
+        ctx.fillText(`📅 完成日期 / Tarikh: ${learningRecords.m2.date || today}`, 240, 570);
+      } else {
+        const timeSecs = learningRecords.m3.timeSeconds || 0;
+        const mins = String(Math.floor(timeSecs / 60)).padStart(2, '0');
+        const secs = String(timeSecs % 60).padStart(2, '0');
+        ctx.fillText(`⏱️ 游戏用时 / Masa: ${mins}:${secs}  (配对数量 Pairs: 10 / 10)`, 240, 525);
+        ctx.fillText(`📅 完成日期 / Tarikh: ${learningRecords.m3.date || today}`, 240, 570);
+      }
+
+      // 模块一明确真实说明（不虚构评估）
+      if (modNum === 1) {
+        ctx.textAlign = 'center';
+        ctx.font = 'italic 18px "Kaiti SC", "STKaiti", "楷体", "KaiTi", serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`* 注：此证书表示学生已完成 14 个词语的学习浏览。`, width / 2, 640);
+      }
+
+      // 金牌图章装饰
+      ctx.save();
+      ctx.translate(920, 680);
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(-20, 20); ctx.lineTo(-40, 80); ctx.lineTo(-10, 65); ctx.lineTo(0, 80); ctx.lineTo(0, 20);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(20, 20); ctx.lineTo(40, 80); ctx.lineTo(10, 65); ctx.lineTo(0, 80); ctx.lineTo(0, 20);
+      ctx.fill();
+
+      ctx.fillStyle = '#facc15';
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, 48, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '40px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⭐', 0, 14);
+      ctx.restore();
+
+      ctx.textAlign = 'left';
+      ctx.font = 'bold 22px "Comic Sans MS", sans-serif';
+      ctx.fillStyle = '#059669';
+      ctx.fillText(' Preschool Chinese Learning Game', 80, 750);
+    }
+
+    function openCertModal(title) {
+      document.getElementById('cert-modal-head-title').innerText = title;
+      
+      const btnReview = document.getElementById('btn-review-wrong');
+      if (currentCertModule === 2 && learningRecords.m2.wrongItems && learningRecords.m2.wrongItems.length > 0) {
+        btnReview.style.display = 'inline-block';
+      } else {
+        btnReview.style.display = 'none';
+      }
+
+      document.getElementById('modal-certificate').classList.add('active');
+    }
+
+    function closeCertModal() {
+      document.getElementById('modal-certificate').classList.remove('active');
+    }
+
+    function downloadCertPNG() {
+      const canvas = document.getElementById('cert-canvas');
+      const link = document.createElement('a');
+      const cleanName = (studentName || 'Student').replace(/\s+/g, '_');
+      link.download = `Sijil_Pekerjaan_${cleanName}_M${currentCertModule}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast("证书已保存为 PNG 图片！", "success");
+    }
+
+    function replayCurrentModule() {
+      closeCertModal();
+      startModule(currentCertModule);
+    }
+
+    /* 错题复习 Modal */
+    function openReviewModal() {
+      const listContainer = document.getElementById('review-list-content');
+      listContainer.innerHTML = '';
+
+      const wrongItems = learningRecords.m2.wrongItems || [];
+      if (wrongItems.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; padding: 20px; font-family: var(--font-kaiti);">太棒了，本次没有错题！</div>';
+      } else {
+        wrongItems.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'review-item';
+          const fallbackSrc = getFallbackImgHTML(item.zh);
+          div.innerHTML = `
+            <img src="${item.imgSrc}" alt="${item.zh}" onerror="this.onerror=null; this.src='${fallbackSrc}';">
+            <div>
+              <div style="font-weight:bold; font-size:1.3rem; color:var(--text-main); font-family:var(--font-kaiti);">${item.zh} (${item.pinyin})</div>
+              <div style="font-size:0.9rem; color:var(--text-muted);">${item.ms}</div>
+            </div>
+            <button class="btn-small" style="margin-left:auto;" onclick="playTTS('${item.zh}', 1.0)">🔊 听发音</button>
+          `;
+          listContainer.appendChild(div);
+        });
+      }
+
+      document.getElementById('modal-review').classList.add('active');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('modal-review').classList.remove('active');
+    }
+
+    /* 数组洗牌 Fisher-Yates 算法 */
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+  </script>
+</body>
+</html>
